@@ -67,7 +67,7 @@ async def async_setup_entry(
     for update in ALL_UPDATES:
         hass.data[update] = None
     
-    close_stale_connections_by_address(address)
+    await close_stale_connections_by_address(address)
 
     ble_device = bluetooth.async_ble_device_from_address(hass, address)
 
