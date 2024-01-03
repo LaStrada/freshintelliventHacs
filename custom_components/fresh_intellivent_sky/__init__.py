@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
+from bleak_retry_connector import close_stale_connections_by_address
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL, Platform
@@ -65,6 +66,8 @@ async def async_setup_entry(
     # Make sure we remove all old data
     for update in ALL_UPDATES:
         hass.data[update] = None
+    
+    close_stale_connections_by_address(address)
 
     ble_device = bluetooth.async_ble_device_from_address(hass, address)
 
