@@ -21,16 +21,16 @@ from pyfreshintellivent.helpers import validated_authentication_code
 from voluptuous.validators import All, Range
 
 from .const import (
+    AUTH_CODE_EMPTY,
+    AUTH_CODE_ONLY_ZERO,
+    AUTH_FETCH,
+    AUTH_MANUAL,
     CONF_AUTH_KEY,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     NAME,
-    AUTH_MANUAL,
-    AUTH_FETCH,
     NO_AUTH,
-    AUTH_CODE_ONLY_ZERO,
-    AUTH_CODE_EMPTY,
     TIMEOUT,
 )
 

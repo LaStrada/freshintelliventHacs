@@ -17,15 +17,19 @@ from homeassistant.helpers.update_coordinator import (
 from pyfreshintellivent import FreshIntelliVent
 
 from .const import (
+    AIRING_KEY,
     AIRING_MODE_UPDATE,
+    CONSTANT_SPEED_KEY,
     CONSTANT_SPEED_UPDATE,
     DELAY_KEY,
     DETECTION_KEY,
     DOMAIN,
     ENABLED_KEY,
+    HUMIDITY_KEY,
     HUMIDITY_MODE_UPDATE,
     MINUTES_KEY,
     RPM_KEY,
+    TIMER_KEY,
     TIMER_MODE_UPDATE,
 )
 
@@ -56,7 +60,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["humidity", "rpm"],
+                keys=[HUMIDITY_KEY, RPM_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -70,7 +74,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["constant_speed", "rpm"],
+                keys=[CONSTANT_SPEED_KEY, RPM_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -84,7 +88,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["airing", "rpm"],
+                keys=[AIRING_KEY, RPM_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -98,7 +102,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=UnitOfTime.MINUTES,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["airing", "minutes"],
+                keys=[AIRING_KEY, MINUTES_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -112,7 +116,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["timer", "rpm"],
+                keys=[TIMER_KEY, RPM_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -126,7 +130,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=UnitOfTime.MINUTES,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["timer", "minutes"],
+                keys=[TIMER_KEY, MINUTES_KEY],
             ),
             FreshIntelliventSkyNumber(
                 coordinator,
@@ -140,7 +144,7 @@ async def async_setup_entry(
                     native_unit_of_measurement=UnitOfTime.MINUTES,
                 ),
                 entity_category=EntityCategory.CONFIG,
-                keys=["timer", "delay", "minutes"],
+                keys=[TIMER_KEY, DELAY_KEY, MINUTES_KEY],
             ),
         ]
     )
@@ -205,33 +209,33 @@ class FreshIntelliventSkyNumber(
 
         if key == "humidity_and_voc_rpm":
             self.coordinator.hass.data[HUMIDITY_MODE_UPDATE] = {
-                ENABLED_KEY: self.device.modes["humidity"][ENABLED_KEY],
-                DETECTION_KEY: self.device.modes["humidity"][DETECTION_KEY],
+                ENABLED_KEY: self.device.modes[HUMIDITY_KEY][ENABLED_KEY],
+                DETECTION_KEY: self.device.modes[HUMIDITY_KEY][DETECTION_KEY],
                 RPM_KEY: int(value),
             }
         elif key == "constant_speed_rpm":
             self.coordinator.hass.data[CONSTANT_SPEED_UPDATE] = {
-                ENABLED_KEY: self.device.modes["constant_speed"][ENABLED_KEY],
+                ENABLED_KEY: self.device.modes[CONSTANT_SPEED_KEY][ENABLED_KEY],
                 RPM_KEY: int(value),
             }
         elif key == "airing_rpm":
             self.coordinator.hass.data[AIRING_MODE_UPDATE] = {
-                ENABLED_KEY: self.device.modes["airing"][ENABLED_KEY],
-                MINUTES_KEY: self.device.modes["airing"][MINUTES_KEY],
+                ENABLED_KEY: self.device.modes[AIRING_KEY][ENABLED_KEY],
+                MINUTES_KEY: self.device.modes[AIRING_KEY][MINUTES_KEY],
                 RPM_KEY: int(value),
             }
         elif key == "airing_minutes":
             self.coordinator.hass.data[AIRING_MODE_UPDATE] = {
-                ENABLED_KEY: self.device.modes["airing"][ENABLED_KEY],
+                ENABLED_KEY: self.device.modes[AIRING_KEY][ENABLED_KEY],
                 MINUTES_KEY: int(value),
-                RPM_KEY: self.device.modes["airing"][RPM_KEY],
+                RPM_KEY: self.device.modes[AIRING_KEY][RPM_KEY],
             }
         elif key == "timer_and_light_rpm":
             self.coordinator.hass.data[TIMER_MODE_UPDATE] = {
-                MINUTES_KEY: self.device.modes["timer"][MINUTES_KEY],
+                MINUTES_KEY: self.device.modes[TIMER_KEY][MINUTES_KEY],
                 DELAY_KEY: {
-                    ENABLED_KEY: self.device.modes["timer"][DELAY_KEY][ENABLED_KEY],
-                    MINUTES_KEY: self.device.modes["timer"][DELAY_KEY][MINUTES_KEY],
+                    ENABLED_KEY: self.device.modes[TIMER_KEY][DELAY_KEY][ENABLED_KEY],
+                    MINUTES_KEY: self.device.modes[TIMER_KEY][DELAY_KEY][MINUTES_KEY],
                 },
                 RPM_KEY: int(value),
             }
@@ -239,22 +243,22 @@ class FreshIntelliventSkyNumber(
             self.coordinator.hass.data[TIMER_MODE_UPDATE] = {
                 MINUTES_KEY: int(value),
                 DELAY_KEY: {
-                    ENABLED_KEY: self.device.modes["timer"][DELAY_KEY][ENABLED_KEY],
-                    MINUTES_KEY: self.device.modes["timer"][DELAY_KEY][MINUTES_KEY],
+                    ENABLED_KEY: self.device.modes[TIMER_KEY][DELAY_KEY][ENABLED_KEY],
+                    MINUTES_KEY: self.device.modes[TIMER_KEY][DELAY_KEY][MINUTES_KEY],
                 },
-                RPM_KEY: self.device.modes["timer"][RPM_KEY],
+                RPM_KEY: self.device.modes[TIMER_KEY][RPM_KEY],
             }
         elif key == "timer_delay_minutes":
             delay_minutes = int(value)
             delay_enabled = delay_minutes > 0
 
             self.coordinator.hass.data[TIMER_MODE_UPDATE] = {
-                MINUTES_KEY: self.device.modes["timer"][MINUTES_KEY],
+                MINUTES_KEY: self.device.modes[TIMER_KEY][MINUTES_KEY],
                 DELAY_KEY: {
                     ENABLED_KEY: delay_enabled,
                     MINUTES_KEY: delay_minutes,
                 },
-                RPM_KEY: self.device.modes["timer"][RPM_KEY],
+                RPM_KEY: self.device.modes[TIMER_KEY][RPM_KEY],
             }
 
         await self.coordinator.async_request_refresh()

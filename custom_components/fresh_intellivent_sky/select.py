@@ -17,12 +17,17 @@ from pyfreshintellivent import FreshIntelliVent
 from pyfreshintellivent.helpers import DETECTION_HIGH, DETECTION_LOW, DETECTION_MEDIUM
 
 from .const import (
+    DETECTION_KEY,
     DETECTION_OFF,
     DOMAIN,
+    ENABLED_KEY,
+    HUMIDITY_KEY,
     HUMIDITY_MODE_UPDATE,
     LIGHT_AND_VOC_MODE_UPDATE,
-    DETECTION_KEY,
-    ENABLED_KEY,
+    LIGHT_KEY,
+    RPM_KEY,
+    VOC_KEY,
+    LIGHT_AND_VOC,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,7 +52,7 @@ async def async_setup_entry(
                     key="humidity_detection",
                     name="Humidity detection",
                 ),
-                keys=["humidity", DETECTION_KEY],
+                keys=[HUMIDITY_KEY, DETECTION_KEY],
             ),
             FreshIntelliventSkySelect(
                 coordinator,
@@ -56,7 +61,7 @@ async def async_setup_entry(
                     key="light_detection",
                     name="Light detection",
                 ),
-                keys=["light_and_voc", "light", DETECTION_KEY],
+                keys=["light_and_voc", LIGHT_KEY, DETECTION_KEY],
             ),
             FreshIntelliventSkySelect(
                 coordinator,
@@ -65,7 +70,7 @@ async def async_setup_entry(
                     key="voc_detection",
                     name="VOC detection",
                 ),
-                keys=["light_and_voc", "voc", DETECTION_KEY],
+                keys=["light_and_voc", VOC_KEY, DETECTION_KEY],
             ),
         ]
     )
@@ -148,22 +153,22 @@ class FreshIntelliventSkySelect(
         enabled = option != DETECTION_OFF
 
         if key == "humidity_detection":
-            humidity = self.device.modes["humidity"]
+            humidity = self.device.modes[HUMIDITY_KEY]
             detection = self._detection_off_check(
                 new_value=option, previous_value=humidity[DETECTION_KEY]
             )
 
             self.coordinator.hass.data[HUMIDITY_MODE_UPDATE] = {
-                "enabled": enabled,
-                "detection": detection,
-                "rpm": humidity["rpm"],
+                ENABLED_KEY: enabled,
+                DETECTION_KEY: detection,
+                RPM_KEY: humidity[RPM_KEY],
             }
-        else:
-            light = self.device.modes["light_and_voc"]["light"]
+        elif key == "light_detection" or key == "voc_detection":
+            light = self.device.modes[LIGHT_AND_VOC][LIGHT_KEY]
             light_enabled = light[ENABLED_KEY]
             light_detection = light[DETECTION_KEY]
 
-            voc = self.device.modes["light_and_voc"]["voc"]
+            voc = self.device.modes[LIGHT_AND_VOC][VOC_KEY]
             voc_enabled = voc[ENABLED_KEY]
             voc_detection = voc[DETECTION_KEY]
 
@@ -184,5 +189,7 @@ class FreshIntelliventSkySelect(
                 "voc_enabled": voc_enabled,
                 "voc_detection": voc_detection,
             }
+        else:
+            _LOGGER.warning("Select option not implemented for %s", key)
 
         await self.coordinator.async_request_refresh()

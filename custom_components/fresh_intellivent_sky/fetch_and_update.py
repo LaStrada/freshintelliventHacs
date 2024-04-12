@@ -18,8 +18,8 @@ from .const import (
     TIMER_MODE_UPDATE,
 )
 
-UPDATE_NEEDED = "update_needed"
-UPDATE_DONE = "update_done"
+LIGHT_PREFIX = "light_"
+VOC_PREFIX = "voc_"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,19 +31,18 @@ class FetchAndUpdate:
 
         self._is_authenticated = client.sensors.authenticated
 
-    async def update_all(self):
-        await self._update_boost()
-        await self._update_pause()
-        await self._fetch_and_update_airing()
-        await self._fetch_and_update_constant_speed()
-        await self._fetch_and_update_humidity()
-        await self._fetch_and_update_light_and_voc()
-        await self._fetch_and_update_timer()
+    async def update_and_fetch_all(self):
+        if self._is_authenticated:
+            await self._update_boost()
+            await self._update_pause()
+            await self._fetch_and_update_airing()
+            await self._fetch_and_update_constant_speed()
+            await self._fetch_and_update_humidity()
+            await self._fetch_and_update_light_and_voc()
+            await self._fetch_and_update_timer()
 
     async def _update_boost(self):
-        boost = self._hass.data.get(BOOST_UPDATE)
-
-        if boost is not None and self._is_authenticated is True:
+        if (boost := self._hass.data.get(BOOST_UPDATE)) is not None:
             await self._client.update_boost(
                 enabled=boost[ENABLED_KEY],
                 rpm=boost[RPM_KEY],
@@ -53,9 +52,7 @@ class FetchAndUpdate:
             self._hass.data[BOOST_UPDATE] = None
 
     async def _update_pause(self):
-        pause = self._hass.data.get(PAUSE_UPDATE)
-
-        if pause is not None and self._is_authenticated is True:
+        if (pause := self._hass.data.get(PAUSE_UPDATE)) is not None:
             await self._client.update_pause(
                 enabled=bool(pause[ENABLED_KEY]),
                 seconds=int(pause[MINUTES_KEY]),
@@ -64,9 +61,9 @@ class FetchAndUpdate:
             self._hass.data[PAUSE_UPDATE] = None
 
     async def _fetch_and_update_airing(self):
-        airing_mode = self._hass.data.get(AIRING_MODE_UPDATE)
-
-        if airing_mode is not None and self._is_authenticated is True:
+        if (
+            airing_mode := self._hass.data.get(AIRING_MODE_UPDATE)
+        ) is not None and self._is_authenticated is True:
             await self._client.update_airing(
                 enabled=bool(airing_mode[ENABLED_KEY]),
                 minutes=int(airing_mode[MINUTES_KEY]),
@@ -78,9 +75,9 @@ class FetchAndUpdate:
             await self._client.fetch_airing()
 
     async def _fetch_and_update_constant_speed(self):
-        constant_speed = self._hass.data.get(CONSTANT_SPEED_UPDATE)
-
-        if constant_speed is not None and self._is_authenticated is True:
+        if (
+            constant_speed := self._hass.data.get(CONSTANT_SPEED_UPDATE)
+        ) is not None and self._is_authenticated is True:
             await self._client.update_constant_speed(
                 enabled=constant_speed[ENABLED_KEY],
                 rpm=constant_speed[RPM_KEY],
@@ -91,9 +88,9 @@ class FetchAndUpdate:
             await self._client.fetch_constant_speed()
 
     async def _fetch_and_update_humidity(self):
-        humidity_mode = self._hass.data.get(HUMIDITY_MODE_UPDATE)
-
-        if humidity_mode is not None and self._is_authenticated is True:
+        if (
+            humidity_mode := self._hass.data.get(HUMIDITY_MODE_UPDATE)
+        ) is not None and self._is_authenticated is True:
             await self._client.update_humidity(
                 enabled=bool(humidity_mode[ENABLED_KEY]),
                 detection=humidity_mode[DETECTION_KEY],
@@ -105,17 +102,14 @@ class FetchAndUpdate:
             await self._client.fetch_humidity()
 
     async def _fetch_and_update_light_and_voc(self):
-        light_and_voc_mode = self._hass.data.get(LIGHT_AND_VOC_MODE_UPDATE)
-
-        if light_and_voc_mode is not None and self._is_authenticated is True:
-            light = "light_"
-            voc = "voc_"
-
+        if (
+            light_and_voc_mode := self._hass.data.get(LIGHT_AND_VOC_MODE_UPDATE)
+        ) is not None and self._is_authenticated is True:
             await self._client.update_light_and_voc(
-                light_enabled=bool(light_and_voc_mode[light + ENABLED_KEY]),
-                light_detection=light_and_voc_mode[light + DETECTION_KEY],
-                voc_enabled=bool(light_and_voc_mode[voc + ENABLED_KEY]),
-                voc_detection=light_and_voc_mode[voc + DETECTION_KEY],
+                light_enabled=bool(light_and_voc_mode[LIGHT_PREFIX + ENABLED_KEY]),
+                light_detection=light_and_voc_mode[LIGHT_PREFIX + DETECTION_KEY],
+                voc_enabled=bool(light_and_voc_mode[VOC_PREFIX + ENABLED_KEY]),
+                voc_detection=light_and_voc_mode[VOC_PREFIX + DETECTION_KEY],
             )
             _LOGGER.debug("Updated light and voc mode: %s", light_and_voc_mode)
             self._hass.data[LIGHT_AND_VOC_MODE_UPDATE] = None
@@ -123,9 +117,9 @@ class FetchAndUpdate:
             await self._client.fetch_light_and_voc()
 
     async def _fetch_and_update_timer(self):
-        timer_mode = self._hass.data.get(TIMER_MODE_UPDATE)
-
-        if timer_mode is not None and self._is_authenticated is True:
+        if (
+            timer_mode := self._hass.data.get(TIMER_MODE_UPDATE)
+        ) is not None and self._is_authenticated is True:
             await self._client.update_timer(
                 minutes=timer_mode[MINUTES_KEY],
                 delay_enabled=timer_mode[DELAY_KEY][ENABLED_KEY],

@@ -7,7 +7,6 @@ NAME = "Intellivent SKY"
 DISPATCH_DETECTION = f"{DOMAIN}.detection"
 
 DEFAULT_SCAN_INTERVAL = 120
-TIMEOUT = 30.0
 
 AUTH_MANUAL = "auth_manual"
 AUTH_FETCH = "auth_fetch"
@@ -23,6 +22,15 @@ DETECTION_OFF = "Off"
 BOOST_UPDATE = "boost_update"
 CONSTANT_SPEED_UPDATE = "constant_speed_update"
 PAUSE_UPDATE = "pause_update"
+
+AIRING_KEY = "airing"
+CONSTANT_SPEED_KEY = "constant_speed"
+HUMIDITY_KEY = "humidity"
+TIMER_KEY = "timer"
+
+LIGHT_KEY = "light"
+VOC_KEY = "voc"
+LIGHT_AND_VOC = "light_and_voc"
 
 AIRING_MODE_UPDATE = "airing_update"
 HUMIDITY_MODE_UPDATE = "humidity_mode_update"

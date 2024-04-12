@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from typing import Optional
 
 from bleak_retry_connector import close_stale_connections_by_address
 from homeassistant.components import bluetooth
@@ -21,7 +22,6 @@ from .const import (
     DOMAIN,
     HUMIDITY_MODE_UPDATE,
     LIGHT_AND_VOC_MODE_UPDATE,
-    TIMEOUT,
     TIMER_MODE_UPDATE,
 )
 from .fetch_and_update import FetchAndUpdate
@@ -66,7 +66,7 @@ async def async_setup_entry(
     # Make sure we remove all old data
     for update in ALL_UPDATES:
         hass.data[update] = None
-    
+
     await close_stale_connections_by_address(address)
 
     ble_device = bluetooth.async_ble_device_from_address(hass, address)
@@ -77,32 +77,20 @@ async def async_setup_entry(
         )
 
     auth_key = entry.data.get(CONF_AUTH_KEY)
+    client = FreshIntelliVent(ble_device=ble_device)
+    updates = FetchAndUpdate(hass=hass, client=client)
 
-    if not ble_device:
-        raise ConfigEntryNotReady(
-            f"Could not find Fresh Intellivent Sky device with address {address}"
-        )
-
-    async def _async_update_method():
+    async def _async_update_method() -> FreshIntelliVent:
         """Get data from Fresh Intellivent Sky."""
-        ble_device = bluetooth.async_ble_device_from_address(hass, address)
-
-        if not ble_device:
-            raise UpdateFailed(f"Unable to find device: {address}")
-
-        client = FreshIntelliVent(ble_device=ble_device)
-
-        error = None
+        error: Optional[Exception] = None
 
         try:
-            await client.connect(timeout=TIMEOUT)
+            await client.connect()
             if auth_key is not None:
                 await client.authenticate(authentication_code=auth_key)
             await client.fetch_sensor_data()
             await client.fetch_device_information()
-
-            updates = FetchAndUpdate(hass=hass, client=client)
-            await updates.update_all()
+            await updates.update_and_fetch_all()
 
         except Exception as err:  # pylint: disable=broad-except
             error = UpdateFailed(f"Unable to fetch data: {err}")
@@ -142,8 +130,7 @@ async def async_setup_entry(
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(
-        entry,
-        READ_ONLY_PLATFORMS if auth_key is None else AUTHENTICATED_PLATFORMS
+        entry, READ_ONLY_PLATFORMS if auth_key is None else AUTHENTICATED_PLATFORMS
     )
 
     return True
